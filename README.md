@@ -27,10 +27,16 @@ figcaption {
      An overview of our framework.
     </em>
 </p>
+
+<p align="center">
+    <img src="./assets/video.gif"/ width=100%> <br />
+    <em>
+     Visual comparisons between NOPS and our method.
+    </em>
+</p>
 <br>
 
 
-<br>
 
 
 
