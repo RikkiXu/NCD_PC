@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="635bc44f-adf9-4497-812a-8c1590f7ee42" name="f">
+        <fileTransfer rootFolder="/public/home/xurj/my/NOPS" accessType="SFTP" host="10.15.89.192" port="22112" sshConfigId="09c4b77b-ea51-444d-b0ff-8eb288c688c4" sshConfig="xurj@10.15.89.192:22112 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
