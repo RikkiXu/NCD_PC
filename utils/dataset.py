@@ -115,6 +115,43 @@ class SemanticKITTIRestrictedDataset(torch.utils.data.Dataset):
         remissions = scan[:, 3]  # get remission
         features = np.ones((coordinates.shape[0], 1))
 
+
+        import os
+        if os.path.exists("/Your region path/" + str(self.data_splits)+"/" + str(t) + '.pkl'):
+            pass
+        else:
+
+            import pickle
+            if "label" in self.files.keys():
+                label_filename = self.files["label"][t]
+                labels = np.fromfile(label_filename, dtype=np.int32)
+                labels = labels.reshape((-1))
+                labels = labels & 0xFFFF
+                for index, element in enumerate(labels):
+                    labels[index] = self.config["learning_map"].get(element, -1)
+            else:
+                    labels = np.negative(np.ones(coordinates.shape[0]))
+
+            # REMOVE UNLABELED POINTS IF NOT IN TESTING
+            if "label" in self.files.keys():
+                labelled_idx = labels != -1
+                labels1 = labels[labelled_idx]
+
+            if self.label_mapping_function is not None:
+                mapped_labels = self.label_mapping_function(labels1)
+            else:
+                mapped_labels = np.copy(labels)
+
+            from sklearn import cluster
+            if labels1[mapped_labels == self.unseen_id].shape[0] >= 1:
+                clustering = cluster.DBSCAN(eps=0.2, min_samples=2).fit(coordinates[labels != -1][mapped_labels == self.unseen_id])
+                region_id = clustering.labels_
+            else:
+                region_id = None
+            with open("/Your region path/" + str(self.data_splits)+"/" + str(t) + '.pkl', "wb") as f:
+                pickle.dump(region_id, f)
+
+
         # AUGMENTATION
         if self.augment:
             # DOWNSAMPLING
@@ -155,7 +192,7 @@ class SemanticKITTIRestrictedDataset(torch.utils.data.Dataset):
             sup_label = np.zeros_like(labels) - 1
 
             if self.superpoint:
-                fr = open('Your_Region_path', "rb")
+                fr = open('/Your region path/' + str(self.data_splits)+"/" + str(t) + '.pkl', "rb")
                 superpoint = pickle.load(fr)
                 fr.close()
                 if superpoint is not None:
@@ -477,6 +514,9 @@ class SemanticPOSSRestrictedDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, t):
 
+
+
+
         pc_filename = self.files["input"][t]
         scan = np.fromfile(pc_filename, dtype=np.float32)
         scan = scan.reshape((-1, 4))
@@ -510,20 +550,45 @@ class SemanticPOSSRestrictedDataset(torch.utils.data.Dataset):
         else:
             selected_idx = np.arange(coordinates.shape[0])
 
+
+
+
         if "label" in self.files.keys():
             label_filename = self.files["label"][t]
             labels = np.fromfile(label_filename, dtype=np.int32)
             labels = labels.reshape((-1))
             labels = labels & 0xFFFF
-
-
-
             labels = self.learning_map_function(labels)
 
 
             sup_label = np.zeros_like(labels) - 1
+
+
+            labelled_idx = labels != -1
+            labels1 = labels[labelled_idx]
+            mapped_labels = self.label_mapping_function(labels1)
+
+            import os
+            if os.path.exists("/Your region path/" + str(self.data_splits)+"/" + str(t) + '.pkl'):
+                pass
+            else:
+
+                from sklearn import cluster
+                if coordinates[labels != -1][mapped_labels == 10].shape[0] >= 1:
+                    clustering = cluster.DBSCAN(eps=0.5, min_samples=2).fit(coordinates[labels != -1][mapped_labels == 10])
+                    region_id = clustering.labels_
+                else:
+                    region_id = None
+
+                import pickle
+
+                with open("/Your region path/" + str(self.data_splits)+"/" + str(t) + '.pkl', "wb") as f:
+                    pickle.dump(region_id, f)
+
+
+
             if self.superpoint:
-                fr = open('Your region path', "rb")
+                fr = open("/Your region path/" + str(self.data_splits)+"/" + str(t) + '.pkl', "rb")
                 superpoint = pickle.load(fr)
                 fr.close()
                 if superpoint is not None:
